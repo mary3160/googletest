@@ -1262,12 +1262,14 @@ class NativeArray {
   test_case_name##_##test_name##_Test
 
 // Helper macro for defining tests.
+//首先使用宏GTEST_TEST_CLASS_NAME_生成类名。
+//、一个静态变量test_info_和一个私有的赋值运算符(将运算符=私有化，限制类对象的赋值和拷贝行为)。
 #define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)\
 class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
  public:\
-  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\
+  GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\    //一个空的默认构造函数
  private:\
-  virtual void TestBody();\
+  virtual void TestBody();\   //一个私有的虚函数TestBody
   static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\
   GTEST_DISALLOW_COPY_AND_ASSIGN_(\
       GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
