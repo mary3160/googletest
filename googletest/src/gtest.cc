@@ -2414,12 +2414,15 @@ GoogleTestFailureException::GoogleTestFailureException(
 // SEH exception.  (Microsoft compilers cannot handle SEH and C++
 // exceptions in the same function.  Therefore, we provide a separate
 // wrapper function for handling SEH exceptions.)
+  
+ //执行模板类T对象的method函数指针指向的方法，核心为(object->*method)()
+  //为了兼容SEH机制——结构化异常处理——一种windows系统上提供给用户处理异常的机制。而这种机制在linux系统上没有。
 template <class T, typename Result>
 Result HandleSehExceptionsInMethodIfSupported(
     T* object, Result (T::*method)(), const char* location) {
 #if GTEST_HAS_SEH
   __try {
-    return (object->*method)();
+    return (object->*method)();  //主要功能
   } __except (internal::UnitTestOptions::GTestShouldProcessSEH(  // NOLINT
       GetExceptionCode())) {
     // We create the exception message on the heap because VC++ prohibits
