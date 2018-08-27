@@ -2269,6 +2269,9 @@ bool StaticAssertTypeEq() {
 // code.  GetTestTypeId() is guaranteed to always return the same
 // value, as it always calls GetTypeId<>() from the Google Test
 // framework.
+//上文解释了为什么用GetTestTypeId():Mac OS用另一个函数时经常返回不同值;
+//GTEST_TEST封装GTEST_TEST_,后者增加了Test类名和ID
+
 #define GTEST_TEST(test_case_name, test_name)\
   GTEST_TEST_(test_case_name, test_name, \
               ::testing::Test, ::testing::internal::GetTestTypeId())
