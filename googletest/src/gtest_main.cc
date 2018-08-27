@@ -30,8 +30,10 @@
 #include <stdio.h>
 #include "gtest/gtest.h"
 
-GTEST_API_ int main(int argc, char **argv) {
-  printf("Running main() from %s\n", __FILE__);
-  testing::InitGoogleTest(&argc, argv);
+//GTEST_API_是什么样的定义？
+
+GTEST_API_ int main(int argc, char **argv) {  //argc:argc是命令行总的参数个数;  char **argv:命令行参数的字符串指针,指针数组的长度即为argc
+  printf("Running main() from %s\n", __FILE__);  //__FILE__用以指示本行语句所在源文件的文件名
+  testing::InitGoogleTest(&argc, argv); //不知道在哪
   return RUN_ALL_TESTS();
 }
