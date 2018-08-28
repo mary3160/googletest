@@ -375,6 +375,7 @@ static bool TestCasePassed(const TestCase* test_case) {
 }
 
 // Returns true iff the test case failed.
+// 失败则返回true
 static bool TestCaseFailed(const TestCase* test_case) {
   return test_case->should_run() && test_case->Failed();
 }
@@ -719,6 +720,7 @@ SingleFailureChecker::~SingleFailureChecker() {
 DefaultGlobalTestPartResultReporter::DefaultGlobalTestPartResultReporter(
     UnitTestImpl* unit_test) : unit_test_(unit_test) {}
 
+  //调用AddTestPartResult方法用于保存“局部测试”结果
 void DefaultGlobalTestPartResultReporter::ReportTestPartResult(
     const TestPartResult& result) {
   unit_test_->current_test_result()->AddTestPartResult(result);
@@ -760,6 +762,7 @@ void UnitTestImpl::SetTestPartResultReporterForCurrentThread(
 }
 
 // Gets the number of successful test cases.
+// 统计结果针对std::vector<TestCase*> test_cases_;这个变量
 int UnitTestImpl::successful_test_case_count() const {
   return CountIf(test_cases_, TestCasePassed);
 }
@@ -775,7 +778,7 @@ int UnitTestImpl::total_test_case_count() const {
 }
 
 // Gets the number of all test cases that contain at least one test
-// that should run.
+// that should run. 
 int UnitTestImpl::test_case_to_run_count() const {
   return CountIf(test_cases_, ShouldRunTestCase);
 }
@@ -2202,6 +2205,7 @@ void TestResult::Clear() {
 }
 
 // Returns true iff the test failed.
+// 测试失败则返回true;较为底层部分
 bool TestResult::Failed() const {
   for (int i = 0; i < total_part_count(); ++i) {
     if (GetTestPartResult(i).failed())
@@ -2580,6 +2584,9 @@ namespace internal {
 //   factory:          pointer to the factory that creates a test object.
 //                     The newly created TestInfo instance will assume
 //                     ownership of the factory object.
+  //建立TestInfo对象，并调用UnitTestImpl单例的AddTestInfo方法，将其保存起来。
+  // AddTestInfo试图通过测试用例名等信息获取测试用例，然后调用测试用例对象去新增一个测试特例——test_info。
+  //这样我们在此就将测试用例和测试特例的关系在代码中找到了关联。
 TestInfo* MakeAndRegisterTestInfo(
     const char* test_case_name,
     const char* name,
@@ -2661,6 +2668,10 @@ void UnitTestImpl::RegisterParameterizedTests() {
 
 // Creates the test object, runs it, records its result, and then
 // deletes it.
+  // Run方法
+  // 它通过构造函数传入的工厂类对象指针调用其重载的CreateTest方法
+  //new出TEST宏中定义的使用GTEST_TEST_CLASS_NAME_命名的类（之后称测试用例特例类）的对象指针，然后调用测试用例特例类的父类中的Run方法。
+  //测试用例特例类继承::testing::Test类后，未重载其Run，所以调用的还是Test类的Run，而Test类的Run是调用了测试用例特例类重载了的TestBody方法
 void TestInfo::Run() {
   if (!should_run_) return;
 
@@ -2678,6 +2689,7 @@ void TestInfo::Run() {
   impl->os_stack_trace_getter()->UponLeavingGTest();
 
   // Creates the test object.
+  //核心
   Test* const test = internal::HandleExceptionsInMethodIfSupported(
       factory_, &internal::TestFactoryBase::CreateTest,
       "the test fixture's constructor");
@@ -2784,6 +2796,7 @@ TestInfo* TestCase::GetMutableTestInfo(int i) {
 
 // Adds a test to this test case.  Will delete the test upon
 // destruction of the TestCase object.
+  //测试特例的保存 test_info_list_
 void TestCase::AddTestInfo(TestInfo * test_info) {
   test_info_list_.push_back(test_info);
   test_indices_.push_back(static_cast<int>(test_indices_.size()));
@@ -4668,6 +4681,8 @@ void UnitTest::RecordProperty(const std::string& key,
 //
 // We don't protect this under mutex_, as we only support calling it
 // from the main thread.
+// UnitTest类的单例（GetInstance）的Run方法 
+  
 int UnitTest::Run() {
   const bool in_death_test_child_process =
       internal::GTEST_FLAG(internal_run_death_test).length() > 0;
@@ -4740,6 +4755,7 @@ int UnitTest::Run() {
   }
 #endif  // GTEST_OS_WINDOWS
 
+  //  impl()方法返回了一个UnitTestImpl对象指针impl_，它是在UniTes类的构造函数中生成的
   return internal::HandleExceptionsInMethodIfSupported(
       impl(),
       &internal::UnitTestImpl::RunAllTests,
@@ -4994,6 +5010,7 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
                                     Test::SetUpTestCaseFunc set_up_tc,
                                     Test::TearDownTestCaseFunc tear_down_tc) {
   // Can we find a TestCase with the given name?
+  // 是否有测试用例类
   const std::vector<TestCase*>::const_reverse_iterator test_case =
       std::find_if(test_cases_.rbegin(), test_cases_.rend(),
                    TestCaseNameIs(test_case_name));
@@ -5002,6 +5019,7 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
     return *test_case;
 
   // No.  Let's create one.
+  // 新建测试用例对象，并保存到UnitTestImpl类单例对象的test_cases_中的逻辑是在GetTestCase函数实现中
   TestCase* const new_test_case =
       new TestCase(test_case_name, type_param, set_up_tc, tear_down_tc);
 
@@ -5017,6 +5035,7 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
                        new_test_case);
   } else {
     // No.  Appends to the end of the list.
+    // 保存指针
     test_cases_.push_back(new_test_case);
   }
 
@@ -5128,6 +5147,8 @@ bool UnitTestImpl::RunAllTests() {
 
       // Runs the tests only if there was no fatal failure during global
       // set-up.
+      // UnitTestImpl类的RunAllTest方法中，核心调度代码
+      //GetMutableTestCase方法逐个返回UnitTestImpl对象成员变量test_cases_中的元素——各个测试用例对象指针，然后调用测试用例的Run方法。
       if (!Test::HasFatalFailure()) {
         for (int test_index = 0; test_index < total_test_case_count();
              test_index++) {
