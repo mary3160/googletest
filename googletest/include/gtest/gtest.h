@@ -868,6 +868,7 @@ class GTEST_API_ TestCase {
   bool Passed() const { return !Failed(); }
 
   // Returns true iff the test case failed.
+  // 失败则返回true
   bool Failed() const { return failed_test_count() > 0; }
 
   // Returns the elapsed time, in milliseconds.
@@ -929,6 +930,7 @@ class GTEST_API_ TestCase {
   }
 
   // Returns true iff test failed.
+  // test_info
   static bool TestFailed(const TestInfo* test_info) {
     return test_info->should_run() && test_info->result()->Failed();
   }
@@ -2330,6 +2332,7 @@ GTEST_API_ std::string TempDir();
 //
 // This function was formerly a macro; thus, it is in the global
 // namespace and has an all-caps name.
+// 调用UnitTest类的单例（GetInstance）的Run方法
 int RUN_ALL_TESTS() GTEST_MUST_USE_RESULT_;
 
 inline int RUN_ALL_TESTS() {
