@@ -466,6 +466,7 @@ class TestFactoryBase {
 
 // This class provides implementation of TeastFactoryBase interface.
 // It is used in TEST and TEST_F macros.
+// 工厂类,新建一个模板类对象
 template <class TestClass>
 class TestFactoryImpl : public TestFactoryBase {
  public:
@@ -515,6 +516,7 @@ struct CodeLocation {
 //   factory:          pointer to the factory that creates a test object.
 //                     The newly created TestInfo instance will assume
 //                     ownership of the factory object.
+// 建立TestInfo对象，并调用UnitTestImpl单例的AddTestInfo方法，将其保存起来。
 GTEST_API_ TestInfo* MakeAndRegisterTestInfo(
     const char* test_case_name,
     const char* name,
@@ -1263,21 +1265,22 @@ class NativeArray {
 
 // Helper macro for defining tests.
 //首先使用宏GTEST_TEST_CLASS_NAME_生成类名。
-//、一个静态变量test_info_和一个私有的赋值运算符(将运算符=私有化，限制类对象的赋值和拷贝行为)。
+
 #define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)\
 class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
  public:\
   GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {}\    //一个空的默认构造函数
  private:\
   virtual void TestBody();\   //一个私有的虚函数TestBody
-  static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\
+  // 静态变量test_info_(在程序运行前被初始化),在main函数执行之前，将测试用例放置于一个固定的位置。这个是”自动“保存测试用例的本质所在。
+  static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;\  
   GTEST_DISALLOW_COPY_AND_ASSIGN_(\
-      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
+      GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\  //一个私有的赋值运算符(将运算符=私有化，限制类对象的赋值和拷贝行为)
 };\
 \
 ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
   ::test_info_ =\
-    ::testing::internal::MakeAndRegisterTestInfo(\
+    ::testing::internal::MakeAndRegisterTestInfo(\   
         #test_case_name, #test_name, NULL, NULL, \
         ::testing::internal::CodeLocation(__FILE__, __LINE__), \
         (parent_id), \
@@ -1285,6 +1288,6 @@ class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class {\
         parent_class::TearDownTestCase, \
         new ::testing::internal::TestFactoryImpl<\
             GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>);\
-void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::TestBody()
+void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::TestBody()  //TEST宏
 
 #endif  // GTEST_INCLUDE_GTEST_INTERNAL_GTEST_INTERNAL_H_
