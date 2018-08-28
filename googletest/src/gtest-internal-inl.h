@@ -275,6 +275,7 @@ GTEST_API_ bool ShouldRunTestOnShard(
 
 // Returns the number of elements in the given container that satisfy
 // the given predicate.
+// CountIf函数返回符合条件的测试用例个数,封装了函数调用迭代器中元素，不用到处都是遍历,将重点放在传入的函数指针
 template <class Container, typename Predicate>
 inline int CountIf(const Container& c, Predicate predicate) {
   // Implemented as an explicit loop since std::count_if() in libCstd on
@@ -648,6 +649,8 @@ class GTEST_API_ UnitTestImpl {
   //   set_up_tc:    pointer to the function that sets up the test case
   //   tear_down_tc: pointer to the function that tears down the test case
   //   test_info:    the TestInfo object
+    //AddTestInfo试图通过测试用例名等信息获取测试用例，然后调用测试用例对象去新增一个测试特例——test_info。
+    //这样我们在此就将测试用例和测试特例的关系在代码中找到了关联。
   void AddTestInfo(Test::SetUpTestCaseFunc set_up_tc,
                    Test::TearDownTestCaseFunc tear_down_tc,
                    TestInfo* test_info) {
@@ -658,6 +661,7 @@ class GTEST_API_ UnitTestImpl {
     // RUN_ALL_TESTS().  Therefore we capture the current directory in
     // AddTestInfo(), which is called to register a TEST or TEST_F
     // before main() is reached.
+      //支持线程安全death tests
     if (original_working_dir_.IsEmpty()) {
       original_working_dir_.Set(FilePath::GetCurrentDir());
       GTEST_CHECK_(!original_working_dir_.IsEmpty())
