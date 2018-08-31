@@ -1410,6 +1410,13 @@ internal::CartesianProductHolder10<Generator1, Generator2, Generator3,
 // Note: test names must be non-empty, unique, and may only contain ASCII
 // alphanumeric characters or underscore. Because PrintToString adds quotes
 // to std::string and C strings, it won't work for these types.
+  
+//定义一个获取参数生成器函数；
+//定义一个生成参数字符串的函数；
+//通过UnitTest::GetInstance()获取UnitTest类的单例；
+//通过parameterized_test_registry()获取UnitTest单例类的参数注册器ParameterizedTestCaseRegistry；
+//通过GetTestCasePatternHolder获取参数化测试用例的信息ParameterizedTestCaseInfo；
+//通过AddTestCaseInstantiation()添加TestCase的信息到GTest中。
 
 #define INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator, ...)        \
   static ::testing::internal::ParamGenerator<test_case_name::ParamType>        \
