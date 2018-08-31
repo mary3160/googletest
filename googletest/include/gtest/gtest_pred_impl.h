@@ -31,6 +31,7 @@
 // 'gen_gtest_pred_impl.py 5'.  DO NOT EDIT BY HAND!
 //
 // Implements a family of generic predicate assertion macros.
+// 自定义断言
 
 // GOOGLETEST_CM0001 DO NOT DELETE
 
@@ -43,7 +44,7 @@ namespace testing {
 
 // This header implements a family of generic predicate assertion
 // macros:
-//
+// 
 //   ASSERT_PRED_FORMAT1(pred_format, v1)
 //   ASSERT_PRED_FORMAT2(pred_format, v1, v2)
 //   ...
@@ -71,6 +72,7 @@ namespace testing {
 // GTEST_ASSERT_ is the basic statement to which all of the assertions
 // in this file reduce.  Don't use this in your code.
 
+  //自定义输出断言
 #define GTEST_ASSERT_(expression, on_failure) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
   if (const ::testing::AssertionResult gtest_ar = (expression)) \
@@ -122,6 +124,7 @@ AssertionResult AssertPred1Helper(const char* pred_text,
 
 // Helper function for implementing {EXPECT|ASSERT}_PRED2.  Don't use
 // this in your code.
+  // 参数名输出断言
 template <typename Pred,
           typename T1,
           typename T2>
