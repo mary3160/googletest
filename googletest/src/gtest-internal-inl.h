@@ -651,6 +651,11 @@ class GTEST_API_ UnitTestImpl {
   //   test_info:    the TestInfo object
     //AddTestInfo试图通过测试用例名等信息获取测试用例，然后调用测试用例对象去新增一个测试特例——test_info。
     //这样我们在此就将测试用例和测试特例的关系在代码中找到了关联。
+    
+    //1. 该接口直接在类中实现，为inline； 
+    //2. 对线程安全的死亡测试进行保护； 
+    //3. 根据测试用例信息获取一个TestCase类，如果获取不到则创建一个新的TestCase; 
+    //4. 把TestInfo添加到TestCase中。
   void AddTestInfo(Test::SetUpTestCaseFunc set_up_tc,
                    Test::TearDownTestCaseFunc tear_down_tc,
                    TestInfo* test_info) {
