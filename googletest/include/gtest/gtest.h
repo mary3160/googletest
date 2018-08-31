@@ -1784,7 +1784,7 @@ class GTEST_API_ AssertHelper {
 //   ASSERT_TRUE(foo.DoesBar(GetParam()));
 // }
 // INSTANTIATE_TEST_CASE_P(OneToTenRange, FooTest, ::testing::Range(1, 10));
-
+// WithParamInterface类，定义ParamType,提供GetParam()函数
 template <typename T>
 class WithParamInterface {
  public:
@@ -1821,8 +1821,8 @@ template <typename T>
 const T* WithParamInterface<T>::parameter_ = NULL;
 
 // Most value-parameterized classes can ignore the existence of
-// WithParamInterface, and can just inherit from ::testing::TestWithParam.
-
+// WithParamInterface, and can just inherit from ::testing::TestWithParam. 
+// 继承Test和WithParamInterface类
 template <typename T>
 class TestWithParam : public Test, public WithParamInterface<T> {
 };
@@ -1874,7 +1874,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {
 #endif
 
 // Macros for testing exceptions.
-//
+// 异常断言
 //    * {ASSERT|EXPECT}_THROW(statement, expected_exception):
 //         Tests that the statement throws the expected exception.
 //    * {ASSERT|EXPECT}_NO_THROW(statement):
@@ -1898,12 +1898,14 @@ class TestWithParam : public Test, public WithParamInterface<T> {
 // Boolean assertions. Condition can be either a Boolean expression or an
 // AssertionResult. For more information on how to use AssertionResult with
 // these macros see comments on that class.
+  //expect_*调用nonfatal failure
 #define EXPECT_TRUE(condition) \
   GTEST_TEST_BOOLEAN_(condition, #condition, false, true, \
                       GTEST_NONFATAL_FAILURE_)
 #define EXPECT_FALSE(condition) \
   GTEST_TEST_BOOLEAN_(!(condition), #condition, true, false, \
                       GTEST_NONFATAL_FAILURE_)
+  //assert_*调用fatal failure
 #define ASSERT_TRUE(condition) \
   GTEST_TEST_BOOLEAN_(condition, #condition, false, true, \
                       GTEST_FATAL_FAILURE_)
@@ -1912,7 +1914,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {
                       GTEST_FATAL_FAILURE_)
 
 // Macros for testing equalities and inequalities.
-//
+// 用来比较是否相等
 //    * {ASSERT|EXPECT}_EQ(v1, v2): Tests that v1 == v2
 //    * {ASSERT|EXPECT}_NE(v1, v2): Tests that v1 != v2
 //    * {ASSERT|EXPECT}_LT(v1, v2): Tests that v1 < v2
@@ -1939,6 +1941,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {
 //   with two C strings, you are testing how their locations in memory
 //   are related, not how their content is related.  To compare two C
 //   strings by content, use {ASSERT|EXPECT}_STR*().
+  // 字符串比较 指针比较
 //
 //   3. {ASSERT|EXPECT}_EQ(v1, v2) is preferred to
 //   {ASSERT|EXPECT}_TRUE(v1 == v2), as the former tells you
@@ -2016,7 +2019,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {
 
 // C-string Comparisons.  All tests treat NULL and any non-NULL string
 // as different.  Two NULLs are equal.
-//
+// 比较字符串
 //    * {ASSERT|EXPECT}_STREQ(s1, s2):     Tests that s1 == s2
 //    * {ASSERT|EXPECT}_STRNE(s1, s2):     Tests that s1 != s2
 //    * {ASSERT|EXPECT}_STRCASEEQ(s1, s2): Tests that s1 == s2, ignoring case
@@ -2285,7 +2288,7 @@ bool StaticAssertTypeEq() {
 #endif
 
 // Defines a test that uses a test fixture.
-//
+// Test Fixtures: 建立一个固定/已知的环境状态以确保测试可重复并且按照预期方式运行
 // The first parameter is the name of the test fixture class, which
 // also doubles as the test case name.  The second parameter is the
 // name of the test within the test case.
@@ -2310,6 +2313,8 @@ bool StaticAssertTypeEq() {
 //     EXPECT_EQ(b_.size(), 1);
 //   }
 
+
+// 子类可以使用父类的public和protected成员
 #define TEST_F(test_fixture, test_name)\
   GTEST_TEST_(test_fixture, test_name, test_fixture, \
               ::testing::internal::GetTypeId<test_fixture>())
