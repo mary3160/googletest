@@ -2506,6 +2506,7 @@ Result HandleExceptionsInMethodIfSupported(
 }  // namespace internal
 
 // Runs the test and updates the test result.
+  //SetUp和TearDown
 void Test::Run() {
   if (!HasSameFixtureClass()) return;
 
@@ -2587,6 +2588,11 @@ namespace internal {
   //建立TestInfo对象，并调用UnitTestImpl单例的AddTestInfo方法，将其保存起来。
   // AddTestInfo试图通过测试用例名等信息获取测试用例，然后调用测试用例对象去新增一个测试特例——test_info。
   //这样我们在此就将测试用例和测试特例的关系在代码中找到了关联。
+  
+  //MakeAndRegisterTestInfo的代码实现如下： 
+//1. new一个TestInfo类; 
+//2. 通过GetUnitTestImpl接口获取一个UnitTestImpl单例； 
+//3. 把TestInfo添加到UnitTestImpl单例中，即对测试用例的信息进行注册。
 TestInfo* MakeAndRegisterTestInfo(
     const char* test_case_name,
     const char* name,
@@ -2597,9 +2603,11 @@ TestInfo* MakeAndRegisterTestInfo(
     SetUpTestCaseFunc set_up_tc,
     TearDownTestCaseFunc tear_down_tc,
     TestFactoryBase* factory) {
+  //new一个TestInfo实例，保存测试用例的相关信息，后续执行是会添加测试结果。
   TestInfo* const test_info =
       new TestInfo(test_case_name, name, type_param, value_param,
                    code_location, fixture_class_id, factory);
+  //添加测试用例信息到UnitTestImpl单例中
   GetUnitTestImpl()->AddTestInfo(set_up_tc, tear_down_tc, test_info);
   return test_info;
 }
@@ -2689,7 +2697,7 @@ void TestInfo::Run() {
   impl->os_stack_trace_getter()->UponLeavingGTest();
 
   // Creates the test object.
-  //核心
+  //核心 test fixture
   Test* const test = internal::HandleExceptionsInMethodIfSupported(
       factory_, &internal::TestFactoryBase::CreateTest,
       "the test fixture's constructor");
@@ -2796,7 +2804,7 @@ TestInfo* TestCase::GetMutableTestInfo(int i) {
 
 // Adds a test to this test case.  Will delete the test upon
 // destruction of the TestCase object.
-  //测试特例的保存 test_info_list_
+  //测试特例的保存 test_info_list_：把TestInfo放入test_info_list_变量中；添加test_indices_信息
 void TestCase::AddTestInfo(TestInfo * test_info) {
   test_info_list_.push_back(test_info);
   test_indices_.push_back(static_cast<int>(test_indices_.size()));
@@ -5010,7 +5018,7 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
                                     Test::SetUpTestCaseFunc set_up_tc,
                                     Test::TearDownTestCaseFunc tear_down_tc) {
   // Can we find a TestCase with the given name?
-  // 是否有测试用例类
+  // //如果能找到该TestCase则直接返回，否则创建一个新的TestCase
   const std::vector<TestCase*>::const_reverse_iterator test_case =
       std::find_if(test_cases_.rbegin(), test_cases_.rend(),
                    TestCaseNameIs(test_case_name));
@@ -5022,6 +5030,12 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
   // 新建测试用例对象，并保存到UnitTestImpl类单例对象的test_cases_中的逻辑是在GetTestCase函数实现中
   TestCase* const new_test_case =
       new TestCase(test_case_name, type_param, set_up_tc, tear_down_tc);
+  
+  
+  //如果该TestCase是死亡测试用例，则插入当前最后一个死亡测试用例的后面，否则插入所有测试用例的后面。
+  //死亡测试和普通的测试用例均保存在test_cases_中；
+  //用last_death_test_case_标识死亡测试用例的位置；
+  //该目的是用去如果运行死亡测试用例，保证其能够最先执行。
 
   // Is this a death test case?
   if (internal::UnitTestOptions::MatchesFilter(test_case_name,
@@ -5035,10 +5049,10 @@ TestCase* UnitTestImpl::GetTestCase(const char* test_case_name,
                        new_test_case);
   } else {
     // No.  Appends to the end of the list.
-    // 保存指针
     test_cases_.push_back(new_test_case);
   }
-
+  
+  //记录该TestCase的索引，便于shuffle and restore.
   test_case_indices_.push_back(static_cast<int>(test_case_indices_.size()));
   return new_test_case;
 }
