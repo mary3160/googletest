@@ -414,8 +414,10 @@ typedef FloatingPoint<double> Double;
 // used to hold such IDs.  The user should treat TypeId as an opaque
 // type: the only operation allowed on TypeId values is to compare
 // them for equality using the == operator.
+// 生成一个唯一的ID
 typedef const void* TypeId;
 
+// 定义了一个只包含静态成员变量的模版类TypeIdHelper
 template <typename T>
 class TypeIdHelper {
  public:
@@ -431,10 +433,11 @@ bool TypeIdHelper<T>::dummy_ = false;
 // GetTypeId<T>() returns the ID of type T.  Different values will be
 // returned for different types.  Calling the function twice with the
 // same type argument is guaranteed to return the same ID.
+// 获取TypeIdHelper类静态变量的地址
 template <typename T>
 TypeId GetTypeId() {
   // The compiler is required to allocate a different
-  // TypeIdHelper<T>::dummy_ variable for each T used to instantiate
+  // TypeIdHelper<T>::dummy_ variable for each T used to instantiate（实例化）
   // the template.  Therefore, the address of dummy_ is guaranteed to
   // be unique.
   return &(TypeIdHelper<T>::dummy_);
@@ -445,10 +448,12 @@ TypeId GetTypeId() {
 // ::testing::Test, as the latter may give the wrong result due to a
 // suspected linker bug when compiling Google Test as a Mac OS X
 // framework.
+// 解决跨平台问题
 GTEST_API_ TypeId GetTestTypeId();
 
 // Defines the abstract factory interface that creates instances
 // of a Test object.
+// Test类工厂函数基类
 class TestFactoryBase {
  public:
   virtual ~TestFactoryBase() {}
@@ -490,6 +495,7 @@ GTEST_API_ AssertionResult IsHRESULTFailure(const char* expr,
 typedef void (*SetUpTestCaseFunc)();
 typedef void (*TearDownTestCaseFunc)();
 
+// 记住该测试用例的文件名称和所在行数
 struct CodeLocation {
   CodeLocation(const std::string& a_file, int a_line)
       : file(a_file), line(a_line) {}
@@ -517,15 +523,16 @@ struct CodeLocation {
 //                     The newly created TestInfo instance will assume
 //                     ownership of the factory object.
 // 建立TestInfo对象，并调用UnitTestImpl单例的AddTestInfo方法，将其保存起来。
+// 保存测试用例信息
 GTEST_API_ TestInfo* MakeAndRegisterTestInfo(
     const char* test_case_name,
     const char* name,
-    const char* type_param,
-    const char* value_param,
+    const char* type_param,   //主要用于TEST_P.TEST中其值为NULL
+    const char* value_param,   //主要用于TEST_P.TEST中其值为NULL
     CodeLocation code_location,
     TypeId fixture_class_id,
-    SetUpTestCaseFunc set_up_tc,
-    TearDownTestCaseFunc tear_down_tc,
+    SetUpTestCaseFunc set_up_tc,   //主要用于TEST_F
+    TearDownTestCaseFunc tear_down_tc,   //主要用于TEST_F
     TestFactoryBase* factory);
 
 // If *pstr starts with the given prefix, modifies *pstr to be right
@@ -901,6 +908,7 @@ struct IsAProtocolMessage
 // Also note that the simpler approach of overloading
 // IsContainerTest(typename C::const_iterator*) and
 // IsContainerTest(...) doesn't work with Visual Age C++ and Sun C++.
+    //判断是否为容器
 typedef int IsContainer;
 #if GTEST_LANG_CXX11
 template <class C,
@@ -1159,9 +1167,11 @@ class NativeArray {
 #define GTEST_MESSAGE_(message, result_type) \
   GTEST_MESSAGE_AT_(__FILE__, __LINE__, message, result_type)
 
+//fatal使用return 返回
 #define GTEST_FATAL_FAILURE_(message) \
   return GTEST_MESSAGE_(message, ::testing::TestPartResult::kFatalFailure)
 
+//non-fatal不返回
 #define GTEST_NONFATAL_FAILURE_(message) \
   GTEST_MESSAGE_(message, ::testing::TestPartResult::kNonFatalFailure)
 
@@ -1174,6 +1184,7 @@ class NativeArray {
 #define GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement) \
   if (::testing::internal::AlwaysTrue()) { statement; }
 
+//异常断言 只有接收到了传入的特定类型的异常，否则都会goto到else代码中进行错误处理。
 #define GTEST_TEST_THROW_(statement, expected_exception, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
   if (::testing::internal::ConstCharPtr gtest_msg = "") { \
@@ -1200,6 +1211,7 @@ class NativeArray {
     GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__): \
       fail(gtest_msg.value)
 
+// 异常断言 只要表达式抛出异常，就会goto到else中进行错误处理。
 #define GTEST_TEST_NO_THROW_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
   if (::testing::internal::AlwaysTrue()) { \
@@ -1214,6 +1226,7 @@ class NativeArray {
       fail("Expected: " #statement " doesn't throw an exception.\n" \
            "  Actual: it throws.")
 
+// 异常断言 只要抛出异常，就认为是正确的。否则goto到else代码中进行错误处理。
 #define GTEST_TEST_ANY_THROW_(statement, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
   if (::testing::internal::AlwaysTrue()) { \
@@ -1236,6 +1249,7 @@ class NativeArray {
 // Implements Boolean test assertions such as EXPECT_TRUE. expression can be
 // either a boolean expression or an AssertionResult. text is a textual
 // represenation of expression as it was passed into the EXPECT_TRUE.
+// fatal使用return返回
 #define GTEST_TEST_BOOLEAN_(expression, text, actual, expected, fail) \
   GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
   if (const ::testing::AssertionResult gtest_ar_ = \
