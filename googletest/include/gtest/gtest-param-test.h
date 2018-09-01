@@ -322,6 +322,7 @@ internal::ParamGenerator<typename Container::value_type> ValuesIn(
 
 // Values() allows generating tests from explicitly specified list of
 // parameters.
+// 生成器：支持参数从1到50
 //
 // Synopsis:
 // Values(T v1, T v2, ..., T vN)
